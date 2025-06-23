@@ -1,0 +1,6 @@
+.DS_Store
+.python-version
+data_set/
+__pycache__
+env/
+config.py
