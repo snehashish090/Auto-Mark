@@ -3,18 +3,9 @@ import cv2
 import numpy as np
 from db import DataBase
 import pyttsx3
-
+import time 
 engine = pyttsx3.init()
 engine.setProperty('rate', 165) 
-
-# This is a demo of running face recognition on live video from your webcam. It's a little more complicated than the
-# other example, but it includes some basic performance tweaks to make things run a lot faster:
-#   1. Process each video frame at 1/4 resolution (though still display it at full resolution)
-#   2. Only detect faces in every other frame of video.
-
-# PLEASE NOTE: This example requires OpenCV (the `cv2` library) to be installed only to read from your webcam.
-# OpenCV is *not* required to use the face_recognition library. It's only required if you want to run this
-# specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
@@ -22,7 +13,10 @@ video_capture = cv2.VideoCapture(0)
 # Create arrays of known face encodings and their names
 
 db = DataBase()
-            
+
+# Running time of one class in seconds
+auto_clear = 60*40
+
 # Initialize some variables
 face_locations = []
 face_encodings = []
@@ -31,7 +25,15 @@ process_this_frame = True
 
 identified_faces = []
 
+t1 = time.time()
+
 while True:
+
+    t2 = time.time()
+    if (t2 - t1) > auto_clear:
+        identified_faces = []
+        t1 = t2
+        continue
     # Grab a single frame of video
     ret, frame = video_capture.read()
 
@@ -64,25 +66,32 @@ while True:
                 known_face_encodings = people[1]
                 known_face_names = people[0]
                 flag = True
+
+                identified_faces.append(face_encoding)
+
                 print("Faces fetched")
             
+            if known_face_encodings != []:
+        
+                # See if the face is a match for the known face(s)
+                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+                name = "Unknown"
 
-            # See if the face is a match for the known face(s)
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-            name = "Unknown"
+                # use the known face with the smallest distance to the new face
+                face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+                best_match_index = np.argmin(face_distances)
+                if matches[best_match_index]:
+                    name = known_face_names[best_match_index]
 
-            # use the known face with the smallest distance to the new face
-            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-            best_match_index = np.argmin(face_distances)
-            if matches[best_match_index]:
-                name = known_face_names[best_match_index]
+                if flag and name!= "Unknown":
+                    print(name, " was identified")
+                    db.add_sighting(name)
+                    engine.say(name+" was Identified")
+                    engine.runAndWait()
 
-            if flag:
-                print(name, " was identified")
-                engine.say(name+" was Identified")
-                engine.runAndWait()
-
-            face_names.append(name)
+                face_names.append(name)
+            else:
+                face_names.append("Unidentified")
             identified_faces.append(face_encoding)
 
     process_this_frame = not process_this_frame

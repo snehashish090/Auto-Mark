@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %} Homepage {% endblock %}
+
+{% block styles %}
+<style>
+  .filter-input {
+    width: 100%;
+    padding: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+</style>
+{% endblock %}
+
+{% block body %}
+<div style="padding:40px;">
+  <h3 class="mb-3">Sighting Records</h3>
+  <table class="table table-bordered table-hover" id="sightingsTable">
+    <thead>
+      <tr>
+        <th>Id <input class="filter-input" onkeyup="filterTable(0)" placeholder="Filter ID"></th>
+        <th>Name <input class="filter-input" onkeyup="filterTable(1)" placeholder="Filter Name"></th>
+        <th>Date <input class="filter-input" onkeyup="filterTable(2)" placeholder="YYYY-MM-DD"></th>
+        <th>Time <input class="filter-input" onkeyup="filterTable(3)" placeholder="HH:MM:SS"></th>
+        <th>Room <input class="filter-input" onkeyup="filterTable(4)" placeholder="Room #"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in sightings %}
+      <tr>
+        <td>{{ i[0] }}</td>
+        <td>{{ i[1] }}</td>
+        <td>{{ i[2] }}</td>
+        <td>{{ i[3] }}</td>
+        <td>{{ i[4] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function filterTable(colIndex) {
+    const input = document.querySelectorAll(".filter-input")[colIndex];
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById("sightingsTable");
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+      const cell = rows[i].getElementsByTagName("td")[colIndex] || rows[i].getElementsByTagName("th")[colIndex];
+      if (cell) {
+        const txtValue = cell.textContent || cell.innerText;
+        rows[i].style.display = txtValue.toLowerCase().includes(filter) ? "" : "none";
+      }
+    }
+  }
+</script>
+{% endblock %}

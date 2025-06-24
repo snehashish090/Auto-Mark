@@ -5,6 +5,8 @@ from contextlib import contextmanager
 import face_recognition
 import numpy as np
 
+from datetime import datetime  # <-- good
+
 from config import *
 # config.py will contain the following variables
 # DB_HOST = ""
@@ -93,12 +95,13 @@ class DataBase:
     def add_person(self, name:str, image_path:str):
 
         image = face_recognition.load_image_file(image_path)
-        encoding = face_recognition.face_encodings(image)[0]
+        encoding = face_recognition.face_encodings(image)
+
 
         try:
             with self.get_conn() as conn:
                 query = "INSERT INTO face_profiles (name, encoding) VALUES (%s, %s)"
-                self._execute_query(conn, query, (name, encoding.tolist()))
+                self._execute_query(conn, query, (name, encoding[0].tolist()))
 
         except Exception as ex:
             print("debug: person with name ", name, " could not be added to the database")
@@ -118,4 +121,48 @@ class DataBase:
                     known_encodings.append(np.array(encoding, dtype=np.float64))
 
             return known_names, known_encodings
+        
+    def add_sighting(self, name):
+
+        now = datetime.now()
+        current_date = now.date()
+        current_time = now.time().replace(microsecond=0)  # Drop microseconds for cleaner formatting
+
+        insert_query = """
+        INSERT INTO sightings (name, date, time, room)
+        VALUES (%s, %s, %s, %s)
+        """
+
+        with self.get_conn()as conn:
+            return self._execute_query(conn, insert_query, (name, current_date, current_time, ROOM_NUMBER))
+
+    def add_admin(self, user_id, password, auth_level):
+
+        query = "INSERT INTO admin_auth(user_id, password, auth_level) VALUES(%s, %s, %s)"
+
+        with self.get_conn() as conn:
+            return self._execute_query(conn, query, (user_id, password, auth_level))
+
+    def verify_admin(self, user_id, password):
+
+        query = "SELECT * FROM admin_auth WHERE user_id=%s AND password=%s"
+        with self.get_conn() as conn:
+            result = self._execute_query(conn, query, (user_id, password), fetch_all=True)
+            if len(result) > 0:
+                return True
+            return False
+        
+    def get_sightings(self, name):
+        query = "SELECT * FROM sightings WHERE name=%s"
+
+        with self.get_conn() as conn:
+            result = self._execute_query(conn, query, (name,), fetch_all=True)
+            return result
+    
+    def get_all_sightings(self):
+        query = "SELECT * FROM sightings"
+
+        with self.get_conn() as conn:
+            result = self._execute_query(conn, query, None, fetch_all=True)
+            return result
         

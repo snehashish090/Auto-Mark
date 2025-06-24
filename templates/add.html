@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %} Homepage {% endblock %}
+
+{% block styles %}
+<style>
+    .card {
+      margin-bottom: 1rem;
+    }
+    .remove-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+    .mb-3 {
+        padding: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+
+  <h3 class="mb-4">Add People</h3>
+  {% if problem %}
+      <div class="alert alert-danger" role="alert">
+          Upload Unsuccessfull! Please try again!
+      </div>
+  {% endif %}
+  <form id="fileUploadForm" method="POST" enctype="multipart/form-data">
+    <div id="cardContainer">
+      <!-- Cards will be appended here -->
+    </div>
+
+    <button type="button" class="btn btn-primary" onclick="addCard()">+ Add File</button>
+    <button type="submit" class="btn btn-success ms-2">Submit</button>
+  </form>
+</div>
+
+<!-- Template for a file upload card -->
+<template id="fileCardTemplate">
+  <div class="card position-relative">
+    <button type="button" class="btn btn-sm btn-danger remove-btn" onclick="removeCard(this)">✖</button>
+    <div class="mb-3">
+      <label class="form-label">Add Face Image</label>
+      <input type="file" class="form-control file-input" accept="image/*">
+
+      <p class="mt-3 mb-1">Enter Name:</p>
+      <input type="text" class="form-control name-input" placeholder="Enter name">
+    </div>
+  </div>
+</template>
+
+<script>
+  let cardCounter = 0;
+
+  function addCard() {
+    const container = document.getElementById("cardContainer");
+    const template = document.getElementById("fileCardTemplate");
+    const clone = template.content.cloneNode(true);
+
+    // Assign unique name attributes
+    const fileInput = clone.querySelector(".file-input");
+    const nameInput = clone.querySelector(".name-input");
+
+    fileInput.name = `file_${cardCounter}`;
+    nameInput.name = `name_${cardCounter}`;
+
+    container.appendChild(clone);
+    cardCounter++;
+  }
+
+  function removeCard(button) {
+    const card = button.closest(".card");
+    card.remove();
+  }
+
+  // Add an initial card on load
+  window.onload = addCard;
+</script>
+{% endblock %}

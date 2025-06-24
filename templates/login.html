@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %} Homepage {% endblock %}
+
+
+{% block styles %}
+<style></style>
+{% endblock %}
+
+{% block body %}
+
+<div style="width:50%; margin-left:25%; background-color: aliceblue; padding: 30px; margin-top:60px">
+    <form method="post">
+
+        <h3>Log into the system</h3>
+    {% if error_code != 200 %}
+      <div class="alert alert-danger" role="alert">
+          Login Unsuccessfull! Please try again!
+      </div>
+    {% endif %}
+
+  <div class="form-group">
+    <label for="exampleInputEmail1">User ID : Email address</label>
+    <input type="email" name="user_id" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+    <small id="emailHelp" class="form-text text-muted">Contact the administrator to register your user id if you dont have one</small>
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+  </div>
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+</div>
+{% endblock %}
