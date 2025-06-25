@@ -34,3 +34,23 @@ def add_admin_user():
         else:
             print("User IDs are not emails or do not match please try again ")
 
+def help():
+    print("""
+List of available commands:
+
+--help : toggles the help menu
+--add-admin : add a new admin user to the server
+          
+""")
+    
+mappings = {
+    "--add-admin":add_admin_user,
+    "--help":help
+}
+
+if len(sys.argv) == 2:
+    for i in mappings:
+        if i == sys.argv[1]:
+            mappings[i]()
+else:
+    print("Usage: python3 interact.py <COMMAND>")
